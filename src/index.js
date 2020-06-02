@@ -15,9 +15,6 @@ client.on('ready', () => {
 });
 
 
-const isValidCommand = (message, cmdName) => message.content.toLowerCase().startsWith(PREFIX + cmdName);
-
-
 client.on('message', message => {
     if (message.author.bot) return;
 
@@ -25,13 +22,12 @@ client.on('message', message => {
     let cmdArgs = message.content.substring(message.content.indexOf(PREFIX) + 1).split(new RegExp(/\s+/));
     let cmdName = cmdArgs.shift();
 
-    if (client.commands.get(cmdName)) {
-        client.commands.get(cmdName).run(client, message, cmdArgs);
-    } else {
-        console.log(cmdName + " does not exist.")
-    }
-
+    if (client.commands.get(cmdName))
+        client.commands.get(cmdName)(client, message, cmdArgs);
+    else
+        console.log(cmdName + " does not exist.");
 });
+
 
 (async function registerCommands(dir = 'commands') {
     // Read the directory/file
@@ -41,12 +37,15 @@ client.on('message', message => {
         let stat = await fs.lstat(path.join(__dirname, dir, file));
         if (stat.isDirectory()) // If file is a directory, recursive call 
             registerCommands(path.join(dir, file));
-        else{
+        else {
             // Check if file is a .js file
             if (file.endsWith('.js')) {
                 let cmdName = file.substring(0, file.indexOf(".js"));
                 let cmdModule = require(path.join(__dirname, dir, file));
-                client.commands.set(cmdName, cmdModule);
+                let { aliases } = cmdModule;
+                client.commands.set(cmdName, cmdModule.run);
+                if (aliases.length !== 0)
+                    aliases.forEach(alias => { client.commands.set(alias, cmdModule.run)});
             }
         }
     }
