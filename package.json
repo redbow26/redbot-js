@@ -1,6 +1,6 @@
 {
   "name": "redbot-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "discord bot in javascript",
   "main": "src/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "ansi-colors": "^4.1.1",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
+    "mongoose": "^5.9.17",
     "table": "^5.4.6"
   }
 }

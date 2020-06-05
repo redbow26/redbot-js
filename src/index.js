@@ -1,25 +1,49 @@
+/*
+install
+*/
 require('dotenv').config();
 const Discord = require('discord.js');
-const client = new Discord.Client();
 const fs = require('fs').promises;
 const path = require('path');
-const { checkCommandModule, checkProperties } = require('./utils/validate');
-const tableConfig = require('./utils/tableConfig');
-const { createStream, table } = require('table');
+const { createStream } = require('table');
 const c = require('ansi-colors');
 
+// Require file
+const { checkCommandModule, checkProperties } = require('./utils/validate');
+const tableConfig = require('./utils/tableConfig');
+const { findEmoji, findRole } = require('./utils/discordUtils.js');
+// Database
+const database = require('./database/database');
+const MessageModel = require('./database/models/message');
+
+const cachedMessageReactions = new Map();
+
+const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION']});
 const commandStatus = [
     [`${c.bold('Command')}`, `${c.bold('Status')}`, `${c.bold("Description")}`]
 ];
 
+// ENV
 const PREFIX = process.env.PREFIX;
-
-client.login(process.env.BOT_TOKEN);
 
 client.commands = new Map();
 
+client.login(process.env.BOT_TOKEN);
+
 client.on('ready', () => {
-    console.log('Bot ready');
+    let stream = createStream(tableConfig);
+    let i = 0;
+    let fn = setInterval(() => {
+        if (i === commandStatus.length){
+            clearInterval(fn);
+            console.log("\n")
+            console.log('Bot ready');
+        }
+        else {
+            stream.write(commandStatus[i]);
+            i++;
+        }
+    }, 250);
 });
 
 
@@ -36,6 +60,76 @@ client.on('message', message => {
         console.log(cmdName + " does not exist.");
 });
 
+
+client.on('messageReactionAdd', async (reaction, user) => {
+    let addMemberRole = (emojiRoleMappings) => {
+        if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
+            let roleId = emojiRoleMappings[reaction.emoji.id];
+            let role = findRole(reaction.message.guild, roleId);
+            let member = reaction.message.guild.members.cache.get(user.id);            
+
+            if (role && member) {
+                member.roles.add(role);
+            }
+        }
+    }
+
+    if (reaction.message.partial) {
+        await reaction.message.fetch();
+        let { id } = reaction.message;
+        try {
+            let msgDocument = await MessageModel.findOne({ messageId: id });
+            if (msgDocument) {
+                cachedMessageReactions.set(id, msgDocument.emojiRoleMappings);
+                let { emojiRoleMappings } = msgDocument;
+                addMemberRole(emojiRoleMappings);
+                
+            }
+        } catch (err) {
+            err => console.log(err);
+        }
+    }
+    else {
+        let emojiRoleMappings = cachedMessageReactions.get(reaction.message.id);
+        if (emojiRoleMappings)
+            addMemberRole(emojiRoleMappings);
+    }
+});
+
+client.on('messageReactionRemove', async (reaction, user) => {
+    let rmMemberRole = (emojiRoleMappings) => {
+        if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
+            let roleId = emojiRoleMappings[reaction.emoji.id];
+            let role = findRole(reaction.message.guild, roleId);
+            let member = reaction.message.guild.members.cache.get(user.id);
+
+            if (role && member) {
+                member.roles.remove(role);
+            }
+        }
+    }
+
+    if (reaction.message.partial) {
+        await reaction.message.fetch();
+        let { id } = reaction.message;
+        try {
+            let msgDocument = await MessageModel.findOne({ messageId: id });
+            if (msgDocument) {
+                cachedMessageReactions.set(id, msgDocument.emojiRoleMappings);
+                let { emojiRoleMappings } = msgDocument;
+                rmMemberRole(emojiRoleMappings);
+                
+            }
+        } catch (err) {
+            err => console.log(err);
+        }
+    }
+    else {
+        let emojiRoleMappings = cachedMessageReactions.get(reaction.message.id);
+        if (emojiRoleMappings)
+            rmMemberRole(emojiRoleMappings);
+    }
+});
 
 (async function registerCommands(dir = 'commands') {
     // Read the directory/file
@@ -70,8 +164,6 @@ client.on('message', message => {
                             );
                         }
                     }
-
-
                 } catch (e) {
                     console.log(e.message);
                     commandStatus.push(
@@ -81,17 +173,4 @@ client.on('message', message => {
             }
         }
     }
-})().then( () => {
-    let stream = createStream(tableConfig);
-    let i = 0;
-    let fn = setInterval(() => {
-        if (i === commandStatus.length){
-            clearInterval(fn);
-            console.log("\n")
-        }
-        else {
-            stream.write(commandStatus[i]);
-            i++;
-        }
-    }, 250);
-});
+})();
