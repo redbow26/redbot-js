@@ -63,7 +63,18 @@ client.on('message', message => {
 
 client.on('messageReactionAdd', async (reaction, user) => {
     let addMemberRole = (emojiRoleMappings) => {
-        if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
+        let emojiRegex = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/
+
+        if (emojiRegex.test(reaction.emoji.name)){
+            let roleId = emojiRoleMappings[reaction.emoji.name];
+            let role = findRole(reaction.message.guild, roleId);
+            let member = reaction.message.guild.members.cache.get(user.id);            
+
+            if (role && member) {
+                member.roles.add(role);
+            }
+        }
+        else if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
             let roleId = emojiRoleMappings[reaction.emoji.id];
             let role = findRole(reaction.message.guild, roleId);
             let member = reaction.message.guild.members.cache.get(user.id);            
@@ -98,10 +109,21 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
 client.on('messageReactionRemove', async (reaction, user) => {
     let rmMemberRole = (emojiRoleMappings) => {
-        if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
+        let emojiRegex = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/
+
+        if (emojiRegex.test(reaction.emoji.name)){
+            let roleId = emojiRoleMappings[reaction.emoji.name];
+            let role = findRole(reaction.message.guild, roleId);
+            let member = reaction.message.guild.members.cache.get(user.id);            
+
+            if (role && member) {
+                member.roles.remove(role);
+            }
+        }
+        else if (emojiRoleMappings.hasOwnProperty(reaction.emoji.id)) {
             let roleId = emojiRoleMappings[reaction.emoji.id];
             let role = findRole(reaction.message.guild, roleId);
-            let member = reaction.message.guild.members.cache.get(user.id);
+            let member = reaction.message.guild.members.cache.get(user.id);            
 
             if (role && member) {
                 member.roles.remove(role);

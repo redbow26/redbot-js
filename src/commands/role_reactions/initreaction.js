@@ -16,7 +16,7 @@ module.exports = {
             try {
                 let fetchedMessage = await message.channel.messages.fetch(args[0]);
                 if (fetchedMessage) {
-                    await message.channel.send("Please provide all the emoji names with the role name, one by one, separated with a space and send \"end\" when you're done. \nYou can give name, id, emoji form for the emoji and name, id, tag for the role \ne.g: emoji role\ne.g: :iphone: iphone");
+                    await message.channel.send("Please provide all the emoji with the role, one by one, separated with a space and send \"end\" when you're done. \nYou can give name, id, emoji form for the emoji and name, id, tag for the role \ne.g: emoji role\ne.g: :iphone: iphone");
                     let collector = new MessageCollector(message.channel, msgCollectorFilter.bind(null, message));
                     let emojiRoleMappings = new Map();
                     collector.on('collect', msg => {
@@ -47,10 +47,15 @@ module.exports = {
                         }
 
                         if (emoji && role) {
+                            let emojiRegex = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/
+                            
                             fetchedMessage.react(emoji)
                             .then()
                             .catch(err => console.log(err));
-                            emojiRoleMappings.set(emoji.id, role.id);
+                            if (!emojiRegex.test(emoji))
+                                emojiRoleMappings.set(emoji.id, role.id);
+                            else
+                                emojiRoleMappings.set(emoji, role.id);
                         }
                         msg.delete({ timeout: 5000 }).catch(err => console.log(err));
                     });

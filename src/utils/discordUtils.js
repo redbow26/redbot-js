@@ -1,5 +1,6 @@
 module.exports.findEmoji = (guild, value) => {
     let { emojis } = guild;
+    let emojiRegex = /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/
     let emoji;
 
     if (/^<:.+:\d+>$/.test(value))
@@ -7,6 +8,8 @@ module.exports.findEmoji = (guild, value) => {
 
     if (/^\d+$/.test(value))
         emoji = emojis.cache.get(value);
+    else if (emojiRegex.test(value))
+        emoji = value;
     else 
         emoji = emojis.cache.find(emoji => emoji.name.toLowerCase() === value.toLowerCase());
 
