@@ -32,7 +32,7 @@ async function registerCommands(client, dir) {
                             if(aliases.length !== 0)
                                 aliases.forEach(alias => client.commands.set(alias, cmdModule.run));
                             commandStatus.push(
-                                [`${c.cyan(`${cmdName}`)}`, `${c.bgGreenBright('Success')}`, `${cmdModule.description}`]
+                                [`${c.cyan(`${cmdName}`)}`, `${c.bgGreenBright.black('Success')}`, `${cmdModule.description}`]
                             )
                         }
                     }
@@ -40,7 +40,7 @@ async function registerCommands(client, dir) {
                 catch(err) {
                     console.log(err);
                     commandStatus.push(
-                        [`${c.white(`${cmdName}`)}`, `${c.bgRedBright('Failed')}`, '']
+                        [`${c.white(`${cmdName}`)}`, `${c.bgRedBright.black('Failed')}`, '']
                     );
                 }
             }
@@ -63,13 +63,13 @@ async function registerEvents(client, dir) {
                     let eventModule = require(path.join(__dirname, dir, file));
                     client.on(eventName, eventModule.bind(null, client));
                     eventStatus.push(
-                        [`${c.cyan(`${eventName}`)}`, `${c.bgGreenBright('Success')}`, '']
+                        [`${c.cyan(`${eventName}`)}`, `${c.bgGreenBright.black('Success')}`, '']
                     )
                 }
                 catch(err) {
                     console.log(err);
                     eventStatus.push(
-                        [`${c.white(`${eventName}`)}`, `${c.bgRedBright('Failed')}`, '']
+                        [`${c.white(`${eventName}`)}`, `${c.bgRedBright.black('Failed')}`, '']
                     );
                 }
             }
