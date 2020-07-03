@@ -7,6 +7,8 @@ module.exports.checkCommandModule = (cmdName, cmdModule) =>{
         throw new Error(`${cmdName} command Module does not have property 'aliases'`);
     if (!cmdModule.hasOwnProperty('description'))
         throw new Error(`${cmdName} command Module does not have property 'description'`);
+    if (!cmdModule.hasOwnProperty('arg'))
+        throw new Error(`${cmdName} command Module does not have property 'arg'`);
     
     return true;
 }
@@ -20,6 +22,9 @@ module.exports.checkProperties = (cmdName, cmdModule) => {
         throw new Error(`${cmdName} command: aliases is not an Array`);
     if (typeof cmdModule.description !== 'string')
         throw new Error(`${cmdName} command: description is not a string`);
+
+    if (typeof cmdModule.arg !== 'boolean')
+        throw new Error(`${cmdName} command: arg is not a boolean`);
     
     return true;
 }

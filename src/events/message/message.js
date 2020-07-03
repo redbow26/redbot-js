@@ -6,9 +6,18 @@ module.exports = (client, message) => {
     if (!message.content.startsWith(PREFIX)) return;
     let cmdArgs = message.content.substring(message.content.indexOf(PREFIX) + 1).split(new RegExp(/\s+/));
     let cmdName = cmdArgs.shift();
+    let cmd = client.commands.get(cmdName);
 
-    if (client.commands.get(cmdName))
-        client.commands.get(cmdName)(client, message, cmdArgs);
+    if (cmd)
+        {
+        if (cmd.arg)
+            if (cmdArgs >= 1)
+                cmd.run(client, message, cmdArgs);
+            else
+                client.emit("missing_arg", message)
+        else
+            cmd(client, message, cmdArgs);
+        }
     else
-        console.log(cmdName + " does not exist.");
+        client.emit("command_not_found", cmdName);
 }

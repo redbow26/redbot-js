@@ -4,5 +4,6 @@ module.exports = {
     },
     name: "",
     aliases: ['t', 'tests'],
-    description: "Test command"
+    description: "Test command",
+    arg: false,
 } 
