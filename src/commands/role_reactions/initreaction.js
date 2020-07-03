@@ -91,6 +91,8 @@ module.exports = {
     },
     name: "",
     aliases: [],
+    category: "",
     description: "Enables a message to listen to reactions to give roles",
-    arg: true
+    usage: "initreaction <message_id>",
+    arg: true,
 } 
