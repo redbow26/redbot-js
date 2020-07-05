@@ -10,11 +10,18 @@ module.exports = client => {
         dbGuildModel.save()
             .then()
             .catch(err => console.log(err));
+        
+        let guildDocument = await GuildModel.findOne({ guildId: guild.id });
+        client.cachedGuild.set(guild.id, guildDocument);
     },
     client.deleteGuildDB = async guild => {
         GuildModel.deleteOne({ guildId: guild.id})
         .then()
         .catch(err => console.log(err));
+
+        let guildFound = client.cachedGuild.get(guild.id);
+        if (guildFound)
+        client.cachedGuild.delete(guild.id);
     },
     client.getGuild = async guild => {
         let guildFound = client.cachedGuild.get(guild.id);
